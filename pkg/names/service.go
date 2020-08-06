@@ -4,14 +4,21 @@ import "fmt"
 
 type Service struct{}
 
-func (s *Service) ListNames(justNice bool) ([]string, error) {
-	if !justNice {
-		return nil, fmt.Errorf("could not fetch non-nice people")
+type Group string
+
+const (
+	Nice    Group = "nice"
+	NotNice Group = "not-nice"
+)
+
+func (s *Service) ListNames(who Group) ([]string, error) {
+	switch who {
+	case Nice:
+		return []string{
+			"Maria",
+		}, nil
+	case NotNice:
+		return nil, fmt.Errorf("could not fetch people who are not nice")
 	}
-	return []string{
-		"Bob",
-		"Maria",
-		"Anthony",
-		"Penelope",
-	}, nil
+	return nil, fmt.Errorf("don't know who should be fetched")
 }
