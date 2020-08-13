@@ -6,20 +6,20 @@ import (
 	"github.com/areknoster/table-driven-tests-gomock/pkg/party"
 )
 
-// namesLister is a facade which let's us mock some external dependency's behaviour
+// namesLister is an interface let's us mock names.Service functions
 type namesLister interface {
 	ListNames(who names.Group) ([]string, error)
 }
 
 type PartyService struct {
 	namesLister namesLister
-	helloer     party.Helloer
+	greeter     party.Greeter
 }
 
-func NewService(service *names.Service, helloer party.Helloer) *PartyService {
+func NewPartyService(namesService *names.Service, greeter party.Greeter) *PartyService {
 	return &PartyService{
-		namesLister: service,
-		helloer:     helloer,
+		namesLister: namesService,
+		greeter:     greeter,
 	}
 }
 
@@ -36,7 +36,7 @@ func (s *PartyService) GreetVisitors(justNice bool) error {
 		visitorNames = append(visitorNames, notNice...)
 	}
 	for _, visitorName := range visitorNames {
-		fmt.Println(s.helloer.Hello(visitorName))
+		fmt.Println(s.greeter.Hello(visitorName))
 	}
 	return nil
 }

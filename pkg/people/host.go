@@ -7,7 +7,7 @@ import (
 
 type Host struct{}
 
-var _ party.Helloer = Host{}
+var _ party.Greeter = Host{}
 
 func (h Host) Hello(name string) string {
 	return fmt.Sprintf("Hello %s, nice to see you!", name)

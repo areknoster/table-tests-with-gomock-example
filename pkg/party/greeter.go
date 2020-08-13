@@ -1,5 +1,5 @@
 package party
 
-type Helloer interface {
+type Greeter interface {
 	Hello(name string) string
 }

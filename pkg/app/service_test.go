@@ -14,7 +14,7 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 	notNice := []string{"Buka"}
 	type fields struct {
 		namesLister *mock_app.MocknamesLister
-		helloer     *mock_party.MockHelloer
+		greeter     *mock_party.MockGreeter
 	}
 	type args struct {
 		justNice bool
@@ -46,13 +46,13 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: " name of nice person, 1 name of not-nice person. helloer should be called with a nice person first, then with not-nice person as an argument",
+			name: " name of nice person, 1 name of not-nice person. greeter should be called with a nice person first, then with not-nice person as an argument",
 			prepare: func(f *fields) {
 				gomock.InOrder(
 					f.namesLister.EXPECT().ListNames(names.Nice).Return(nice, nil),
 					f.namesLister.EXPECT().ListNames(names.NotNice).Return(notNice, nil),
-					f.helloer.EXPECT().Hello(nice[0]),
-					f.helloer.EXPECT().Hello(notNice[0]),
+					f.greeter.EXPECT().Hello(nice[0]),
+					f.greeter.EXPECT().Hello(notNice[0]),
 				)
 			},
 			args:    args{justNice: false},
@@ -65,7 +65,7 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 			defer ctrl.Finish()
 			f := fields{
 				namesLister: mock_app.NewMocknamesLister(ctrl),
-				helloer:     mock_party.NewMockHelloer(ctrl),
+				greeter:     mock_party.NewMockGreeter(ctrl),
 			}
 			if tt.prepare != nil {
 				tt.prepare(&f)
@@ -73,7 +73,7 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 
 			s := &PartyService{
 				namesLister: f.namesLister,
-				helloer:     f.helloer,
+				greeter:     f.greeter,
 			}
 			if err := s.GreetVisitors(tt.args.justNice); (err != nil) != tt.wantErr {
 				t.Errorf("GreetVisitors() error = %v, wantErr %v", err, tt.wantErr)
