@@ -6,7 +6,7 @@ import (
 	"github.com/areknoster/table-driven-tests-gomock/pkg/party"
 )
 
-// namesLister is an interface let's us mock names.Service functions
+// namesLister is an interface that let us mock names.Service functions
 type namesLister interface {
 	ListNames(who names.Group) ([]string, error)
 }
