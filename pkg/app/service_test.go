@@ -28,7 +28,6 @@ func TestPartyService_GreetVisitors_NotNiceReturnsError(t *testing.T) {
 	if gotErr == nil {
 		t.Errorf("did not get an error")
 	}
-	// If not all expected calls to mockedNamesLister were made, the test would fail too
 }
 
 func TestPartyService_GreetVisitors(t *testing.T) {
