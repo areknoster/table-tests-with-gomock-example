@@ -2,9 +2,8 @@ package app
 
 import (
 	"fmt"
-	mock_app "github.com/areknoster/table-driven-tests-gomock/mocks/pkg/app"
 	mock_party "github.com/areknoster/table-driven-tests-gomock/mocks/pkg/party"
-	"github.com/areknoster/table-driven-tests-gomock/pkg/names"
+	"github.com/areknoster/table-driven-tests-gomock/pkg/party"
 	"github.com/golang/mock/gomock"
 	"testing"
 )
@@ -15,14 +14,14 @@ func TestPartyService_GreetVisitors_NotNiceReturnsError(t *testing.T) {
 	// if not all expectations set on the controller are fulfilled at the end of function, the test will fail!
 	defer ctrl.Finish()
 	// init structure which implements namesLister interface
-	mockedNamesLister := mock_app.NewMocknamesLister(ctrl)
-	// mockedNamesLister called once with names.Nice argument would return []string{"Peter"}, nil
-	mockedNamesLister.EXPECT().ListNames(names.Nice).Return([]string{"Peter"}, nil)
-	// mockedNamesLister called once with names.NotNice argument would return nil and error
-	mockedNamesLister.EXPECT().ListNames(names.NotNice).Return(nil, fmt.Errorf("dummyErr"))
-	// mockedNamesLister implements namesLister interface, so it can be assigned in PartyService
+	mockedVisitorLister := mock_party.NewMockVisitorLister(ctrl)
+	// mockedVisitorLister called once with names.NiceVisitor argument would return []string{"Peter"}, nil
+	mockedVisitorLister.EXPECT().ListVisitors(party.NiceVisitor).Return([]party.Visitor{{"Peter", "TheSmart"}}, nil)
+	// mockedVisitorLister called once with names.NotNiceVisitor argument would return nil and error
+	mockedVisitorLister.EXPECT().ListVisitors(party.NotNiceVisitor).Return(nil, fmt.Errorf("dummyErr"))
+	// mockedVisitorLister implements namesLister interface, so it can be assigned in PartyService
 	sp := &PartyService{
-		namesLister: mockedNamesLister,
+		visitorLister: mockedVisitorLister,
 	}
 	gotErr := sp.GreetVisitors(false)
 	if gotErr == nil {
@@ -32,7 +31,7 @@ func TestPartyService_GreetVisitors_NotNiceReturnsError(t *testing.T) {
 
 func TestPartyService_GreetVisitors(t *testing.T) {
 	type fields struct {
-		namesLister *mock_app.MocknamesLister
+		namesLister *mock_party.MockVisitorLister
 		greeter     *mock_party.MockGreeter
 	}
 	type args struct {
@@ -45,20 +44,20 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "namesLister.ListNames(names.Nice) returns error, error expected",
+			name: "namesLister.ListVisitors(names.NiceVisitor) returns error, error expected",
 			prepare: func(f *fields) {
-				f.namesLister.EXPECT().ListNames(names.Nice).Return(nil, fmt.Errorf("dummyErr"))
+				f.namesLister.EXPECT().ListVisitors(party.NiceVisitor).Return(nil, fmt.Errorf("dummyErr"))
 			},
 			args:    args{justNice: true},
 			wantErr: true,
 		},
 		{
-			name: "namesLister.ListNames(names.NotNice) returns error, error expected",
+			name: "namesLister.ListVisitors(names.NotNiceVisitor) returns error, error expected",
 			prepare: func(f *fields) {
 				// if given calls do not happen in expected order, the test would fail!
 				gomock.InOrder(
-					f.namesLister.EXPECT().ListNames(names.Nice).Return([]string{"Peter"}, nil),
-					f.namesLister.EXPECT().ListNames(names.NotNice).Return(nil, fmt.Errorf("dummyErr")),
+					f.namesLister.EXPECT().ListVisitors(party.NiceVisitor).Return([]string{"Peter"}, nil),
+					f.namesLister.EXPECT().ListVisitors(party.NotNiceVisitor).Return(nil, fmt.Errorf("dummyErr")),
 				)
 			},
 			args:    args{justNice: false},
@@ -70,8 +69,8 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 				nice := []string{"Peter"}
 				notNice := []string{"Buka"}
 				gomock.InOrder(
-					f.namesLister.EXPECT().ListNames(names.Nice).Return(nice, nil),
-					f.namesLister.EXPECT().ListNames(names.NotNice).Return(notNice, nil),
+					f.namesLister.EXPECT().ListVisitors(party.NiceVisitor).Return(nice, nil),
+					f.namesLister.EXPECT().ListVisitors(party.NotNiceVisitor).Return(notNice, nil),
 					f.greeter.EXPECT().Hello(nice[0]),
 					f.greeter.EXPECT().Hello(notNice[0]),
 				)
@@ -85,7 +84,7 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			f := fields{
-				namesLister: mock_app.NewMocknamesLister(ctrl),
+				namesLister: mock_party.NewMockVisitorLister(ctrl),
 				greeter:     mock_party.NewMockGreeter(ctrl),
 			}
 			if tt.prepare != nil {
@@ -93,8 +92,8 @@ func TestPartyService_GreetVisitors(t *testing.T) {
 			}
 
 			s := &PartyService{
-				namesLister: f.namesLister,
-				greeter:     f.greeter,
+				visitorLister: f.namesLister,
+				greeter:       f.greeter,
 			}
 			if err := s.GreetVisitors(tt.args.justNice); (err != nil) != tt.wantErr {
 				t.Errorf("GreetVisitors() error = %v, wantErr %v", err, tt.wantErr)
